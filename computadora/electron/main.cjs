@@ -1,3 +1,4 @@
+const { startWebSocketServer } = require("./wsServer.cjs");
 const { startUDPServer } = require("./udpDiscovery.cjs");
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
@@ -17,6 +18,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  startWebSocketServer();
   startUDPServer();
   createWindow();
 });
