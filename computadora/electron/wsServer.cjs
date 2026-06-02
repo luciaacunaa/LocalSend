@@ -12,9 +12,25 @@ function startWebSocketServer() {
   wss.on("connection", (ws, req) => {
     console.log("Cliente conectado:", req.socket.remoteAddress);
 
-    ws.on("message", (message) => {
-      console.log("Mensaje recibido:", message.toString());
-    });
+   ws.on("message", (message) => {
+  const data = JSON.parse(message.toString());
+
+  if (data.type === "hello") {
+    console.log("Dispositivo:", data.device);
+  }
+
+  if (data.type === "file-offer") {
+    console.log("Archivo ofrecido:");
+    console.log("Nombre:", data.name);
+    console.log("Tamaño:", data.size);
+
+    ws.send(
+      JSON.stringify({
+        type: "accepted",
+      }),
+    );
+  }
+});
 
     ws.send("Conectado al servidor");
   });
