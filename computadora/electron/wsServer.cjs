@@ -1,9 +1,9 @@
 const { WebSocketServer } = require("ws");
-
-let wss;
+const fs = require("fs");
+const path = require("path");
 
 function startWebSocketServer() {
-  wss = new WebSocketServer({
+  const wss = new WebSocketServer({
     port: 8080,
   });
 
@@ -12,27 +12,27 @@ function startWebSocketServer() {
   wss.on("connection", (ws, req) => {
     console.log("Cliente conectado:", req.socket.remoteAddress);
 
-   ws.on("message", (message) => {
-  const data = JSON.parse(message.toString());
+    ws.on("message", (message) => {
+      const data = JSON.parse(message.toString());
 
-  if (data.type === "hello") {
-    console.log("Dispositivo:", data.device);
-  }
+      if (data.type === "file") {
+        console.log("Recibiendo:", data.name);
 
-  if (data.type === "file-offer") {
-    console.log("Archivo ofrecido:");
-    console.log("Nombre:", data.name);
-    console.log("Tamaño:", data.size);
+        const carpeta = path.join(process.cwd(), "archivos_recibidos");
 
-    ws.send(
-      JSON.stringify({
-        type: "accepted",
-      }),
-    );
-  }
-});
+        if (!fs.existsSync(carpeta)) {
+          fs.mkdirSync(carpeta);
+        }
 
-    ws.send("Conectado al servidor");
+        const ruta = path.join(carpeta, data.name);
+
+        fs.writeFileSync(ruta, Buffer.from(data.data, "base64"));
+
+        console.log("Guardado en:", ruta);
+
+        ws.send(`Archivo guardado: ${data.name}`);
+      }
+    });
   });
 }
 
